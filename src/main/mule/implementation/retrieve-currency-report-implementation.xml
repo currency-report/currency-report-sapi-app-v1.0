@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="retrieve-currency-report-implementationFlow" doc:id="b0a4bdb8-0584-472a-9fee-9fbbcc3aee43" >
+		<logger level="INFO" doc:name="Request Logger" doc:id="f3170d50-05ae-467c-bfbd-440a11b52b84" message="#[%dw 2.0 &#10;output application/json indent = false &#10;--- &#10;{ 	&#10;    TimeStamp: (now() &gt;&gt; &quot;UTC&quot;) as String {format: 'yyyy-MM-dd hh:mm:ss'}, &#10;    transactionId: vars.request_headers.'x-rms-transactionId',&#10;    AppName: app.name, 	&#10;    FlowName: flow.name, 	&#10;    BusinessProcessName:  &quot;Currency Reporting&quot;, 	 	&#10;    OriginatingApplication:  &quot;Process API&quot;, 	&#10;    DesinationApplication:  &quot;Exchange API&quot;, 	 	&#10;    txnState:  &quot;Request API-Layer Exchange Rate API&quot; &#10;}]"/>
+		<http:request method="GET" doc:name="Request" doc:id="5b2cdb0f-4b5c-4fd7-a36f-f942008cae54" path="${http.requester.exchangeAPI.path}" config-ref="HTTP_Request_Configuration_ExchangeAPI">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"apikey" : p('secure::apiKey')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"from" : vars.request_queryParams.fromCurrency,
+	"to" : vars.request_queryParams.baseCurrency,
+	"amount" : 1
+}]]]></http:query-params>
+		</http:request>
+		<logger level="INFO" doc:name="Response Logger" doc:id="34833e5d-852d-4b06-b4e7-e9dce8bdcd94" />
+		<ee:transform doc:name="Transform Message" doc:id="44e4f516-8dd4-4813-92ad-1c811c829b77" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.info]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

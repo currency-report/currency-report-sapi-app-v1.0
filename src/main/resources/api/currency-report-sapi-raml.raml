@@ -1,0 +1,44 @@
+#%RAML 1.0
+title: currency-report-sapi-raml
+version: 1.0.0
+
+uses:
+  common-library: exchange_modules/76f48643-75f1-4c30-a15d-5b95da5cb569/common-fragment/1.0.4/common-fragment.raml
+
+/currency:
+  /reports:
+    get:
+      is:
+        - common-library.common-headers
+        - common-library.common-error
+      queryParameters:
+        fromCurrency:
+          required: true
+          type: string
+          example: "USD"
+        baseCurrency:
+          required: true
+          type: string
+          example: "INR"
+      responses:
+        200:
+          body:
+            application/json:
+              type: common-library.currency-report-response
+              example: !include /examples/currency-report-response-example.json
+/email:
+  post:
+    is:
+      - common-library.common-headers
+      - common-library.common-error
+    body:
+      application/json:
+        type: common-library.send-email-request
+    responses:
+      200:
+        body:
+          application/json:
+            type: common-library.success-response
+            example: !include /examples/success-response-example.json
+              
+        

@@ -1,0 +1,10 @@
+#%RAML 1.0 Library
+usage:
+traits:
+  common-headers: !include traits/common-headers-trait.raml
+  common-error: !include traits/common-error-response-trait.raml
+
+types:
+  currency-report-response: !include datatypes/currency-report-response-dataType.raml
+  send-email-request: !include datatypes/postEmail-request-dataType.raml
+  success-response: !include datatypes/success-response-dataType.raml

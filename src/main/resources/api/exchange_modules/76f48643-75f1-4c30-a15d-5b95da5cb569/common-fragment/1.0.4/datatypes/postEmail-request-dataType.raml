@@ -1,0 +1,24 @@
+#%RAML 1.0 DataType
+
+type: object
+properties:
+  fromCurrency:
+    required: true
+    type: string 
+    example: "INR"
+  baseCurrency:
+    required: true
+    type: string 
+    example: "USD"
+  timestamp: 
+    required: true
+    type: integer
+    example: 1663480052
+  rate: 
+    required: true
+    type: number
+    example: 0.012555
+  email:
+    required: true
+    type: string 
+    example: "abc@gmail.com"    

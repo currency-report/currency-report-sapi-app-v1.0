@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+   <flow name="currency-report-sapi-raml-main">
+        <http:listener config-ref="currency-report-sapi-raml-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="currency-report-sapi-raml-config" />
+        <error-handler ref="Error_Handler_Apikit"/>
+    </flow>
+    <flow name="currency-report-sapi-raml-console">
+        <http:listener config-ref="currency-report-sapi-raml-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="currency-report-sapi-raml-config" />
+		<error-handler ref="Error_Handler_Apikit" />
+    </flow>
+    <flow name="get:\currency\reports:currency-report-sapi-raml-config">
+		<flow-ref doc:name="Flow Reference Initialize Request Data" doc:id="5287142f-c122-41cf-a895-e6ccf69d85f7" name="initialize-request-variable-subflow" />
+		<logger level="INFO" doc:name="Start Logger" doc:id="67a916a7-d27b-423a-97ef-84315118638e" message="#[%dw 2.0 &#10;output application/json indent = false &#10;--- &#10;{ 	&#10;    TimeStamp: vars.startTime, &#10;    transactionId: vars.request_headers.'x-rms-transactionId',&#10;    AppName: app.name, 	&#10;    FlowName: flow.name, 	&#10;    BusinessProcessName:  &quot;Currency Reporting&quot;, 	 	&#10;    OriginatingApplication:  &quot;Process API&quot;, 	&#10;    DesinationApplication:  &quot;Exchange API&quot;, 	 	&#10;    txnState:  &quot;START&quot; &#10;}]"/>
+		<flow-ref doc:name="Flow Reference" doc:id="a5ccf8da-d266-4711-875e-640f96d32599" name="retrieve-currency-report-implementationFlow"/>
+		<logger level="INFO" doc:name="End Logger" doc:id="f90d2e1b-2192-438f-a150-59652aee4555" message="#[%dw 2.0 &#10;output application/json indent = false &#10;--- &#10;{ 	&#10;    TimeStamp: (now() &gt;&gt; &quot;UTC&quot;) as String {format: 'yyyy-MM-dd hh:mm:ss'}, &#10;    transactionId: vars.request_headers.'x-rms-transactionId',&#10;    AppName: app.name, 	&#10;    FlowName: flow.name, 	&#10;    BusinessProcessName:  &quot;Currency Reporting&quot;, 	 	&#10;    OriginatingApplication:  &quot;Process API&quot;, 	&#10;    DesinationApplication:  &quot;Exchange API&quot;, 	 	&#10;    txnState:  &quot;END&quot; &#10;}]"/>
+		<error-handler ref="Error_Handler_Apikit" />
+    </flow>
+    <flow name="post:\email:application\json:currency-report-sapi-raml-config">
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  msg: "Success",
+  code: 200
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<error-handler ref="Error_Handler_Apikit" />
+    </flow>
+</mule>
